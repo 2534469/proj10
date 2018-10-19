@@ -85,7 +85,6 @@ int main() {
         if (sdata.size() > 2 && sdata[0] == '4' && sdata[1] == '2') {
             string s = hasData(sdata);
             if (s != "") {
-                const double Lf = 2.67;
                 auto j = json::parse(s);
                 string event = j[0].get<string>();
                 if (event == "telemetry") {
@@ -96,9 +95,6 @@ int main() {
                     double py = j[1]["y"];
                     double psi = j[1]["psi"];
                     double v = j[1]["speed"];
-
-                    double delta = j[1]["steering_angle"];
-                    double a = j[1]["throttle"];
 
                     vector<double> ptsx_new;
                     vector<double> ptsy_new;
