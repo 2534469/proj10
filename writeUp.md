@@ -3,7 +3,7 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
-##The Model
+## The Model
 
 In this project we use kinematic model, which do not take the gravity, 
 air resistance and tire forces, but are pretty tractable.
@@ -64,7 +64,7 @@ for (int t = 0; t < N - 2; t++) {
 
 ```
 
-##Timestep Length and Elapsed Duration (N & dt)
+## Timestep Length and Elapsed Duration (N & dt)
 
 For the number of steps, N I've chosen the value N=10 and time between steps dt = 0.1.
 If one choses N too large, say N =100, the processing time takes too long and the car gets 
@@ -74,7 +74,7 @@ oscillation of the car or flying out of the track, since the actuators receive t
 to late.
  
 
-##Polynomial Fitting and MPC Preprocessing
+## Polynomial Fitting and MPC Preprocessing
 
 For the polynomial fitting I first translate coordination to the vehicle coordination system
 by shifting and rotating, and also negate the angle since simulator turns right for positive 
@@ -92,7 +92,7 @@ for(int i = 0; i < ptsx.size(); i++) {
 }
 ```
 
-##Model Predictive Control with Latency
+## Model Predictive Control with Latency
 
 A latency of 100 ms corresponds to one timestep in the model implementation.
 To dump a latency I also apply the actuators one time step later, see MPC.cpp(line 109-115).
