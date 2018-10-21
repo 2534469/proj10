@@ -27,9 +27,8 @@ y[t+1] = y[t] + v[t]*sin(psi[t])*dt
 psi[t+1] = psi[t] + v[t]*(delta[t]/Lf) * dt
 v[t+1] = v[t] + a[t]*dt
 cte[t+1] = f(x[t]) - y[t] + v[t]*sin(epsi[t])*dt
-epsi[t+1] = psi[t] - psi_des[t]  + v[t]*(delta[t]/Lf) * dt
+epsi[t+1] = psi[t] - psi_des[t] + v[t]*(delta[t]/Lf) * dt
 ```
-Note, the left hand side should equals 0.
 
 The cost function is defined as a sum of errors discrepances over the caluculated timestamps
 and include:
