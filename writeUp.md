@@ -21,12 +21,13 @@ The calculated state from the previous can be predicted by a model, using the st
 actuators value:
    
 ```cpp
-fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
-fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
-fg[1 + psi_start + t] = psi1 - (psi0 - v0 * delta0 / Lf * dt);
-fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
-fg[1 + cte_start + t] =cte1 - ((f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
-fg[1 + epsi_start + t] = epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
+//pseudocode for t+1 timestep
+x[t+1] = x[t] + v[t]*cos(psi[t])*dt
+y[t+1] = y[t] + v[t]*sin(psi[t])*dt
+psi[t+1] = psi[t] + v[t]*(delta[t]/Lf) * dt
+v[t+1] = v[t] + a[t]*dt
+cte[t+1] = f(x[t]) - y[t] + v[t]*sin(epsi[t])*dt
+epsi[t+1] = psi[t] - psi_des[t]  + v[t]*(delta[t]/Lf) * dt
 ```
 Note, the left hand side should equals 0.
 
@@ -39,16 +40,17 @@ and include:
 5. Sum of squared difference of a and delta between consecutive timestamps. 
 
 ```cpp
-cons double cte_coeff = 15000;
-const double epsi_coeff = 10000;
+const double cte_coeff = 1000;
+const double epsi_coeff = 1000;
 const double delta_coeff = 100;
 const double a_coeff = 20;
 const double delta_diff_coeff = 100;
+const double v_coeff = 30;
 
 for (int t = 0; t < N; t++) {
     fg[0] += cte_coeff*CppAD::pow(vars[cte_start + t] - ref_cte, 2); //cte_coeff
     fg[0] += epsi_coeff*CppAD::pow(vars[epsi_start + t] - ref_epsi, 2); //epsi_coeff
-    fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+    fg[0] += v_coeff*CppAD::pow(vars[v_start + t] - ref_v, 2);
 }
 // Minimize the use of actuators.
 for (int t = 0; t < N - 1; t++) {
@@ -85,8 +87,8 @@ vector<double> ptsy_new;
 for(int i = 0; i < ptsx.size(); i++) {
     double shift_x = ptsx[i] - px;
     double shift_y = ptsy[i] - py;
-    double ptx_new = shift_x * cos(-psi) - shift_y * sin(-psi); //delta anticlockwise
-    double pty_new = shift_x * sin(-psi) + shift_y * cos(-psi);
+    double ptx_new = shift_x * cos(-psi) - shift_y * sin(-psi); //here we flip psi, due to the simulator configration
+    double pty_new = shift_x * sin(-psi) + shift_y * cos(-psi); //the same
     ptsx_new.push_back(ptx_new);
     ptsy_new.push_back(pty_new);
 }
@@ -95,7 +97,9 @@ for(int i = 0; i < ptsx.size(); i++) {
 ## Model Predictive Control with Latency
 
 A latency of 100 ms corresponds to one timestep in the model implementation.
-To dump a latency I also apply the actuators one time step later, see MPC.cpp(line 109-115).
+To dump the latency I input the calculated state after the first timestep to the solver 
+after the transformation to the  and coefficients. So I use kinematic equation to
+predict the state after 100 ms and then send it to the MPC.
 Also for a cost function I penalize the cte error and epsi error together with 
 usage of actuators and delta difference, trying to make the behavior of the car more 
 smooth on the corners.

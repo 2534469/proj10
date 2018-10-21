@@ -95,6 +95,8 @@ int main() {
                     double py = j[1]["y"];
                     double psi = j[1]["psi"];
                     double v = j[1]["speed"];
+                    double a = j[1]["throttle"];
+                    double delta = j[1]["steering_angle"];
 
                     vector<double> ptsx_new;
                     vector<double> ptsy_new;
@@ -120,8 +122,20 @@ int main() {
                     double epsi = psi - atan(coeffs[1]); //psi ==0
 
                     Eigen::VectorXd state(6);
-                    state << 0.0, 0.0, 0.0, v, cte, epsi;
 
+                    //now predict state after one step
+                    const double Lf = 2.67;
+                    const double dt = 0.1;
+                    double pred_state_px = 0.0 + v * dt; // psi = zero, cos(0) = 1
+                    double pred_state_py = 0.0; //  sin(0) = 0
+                    double pred_state_psi = 0.0 - v * (delta / Lf) * dt;
+                    double pred_state_v = v + a * dt;
+                    double pred_state_cte = cte + v * sin(epsi) * dt;
+                    double pred_epsi = epsi - v * (delta / Lf) * dt;
+
+                    //state << 0.0, 0.0, 0.0, v, cte, epsi;
+
+                    state << pred_state_px,pred_state_py,pred_state_psi,pred_state_v,pred_state_cte,pred_epsi;
                     auto vars = mpc.Solve(state, coeffs);
 
                     vector<double> next_x_vals;

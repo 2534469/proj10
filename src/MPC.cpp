@@ -21,15 +21,16 @@ double dt = 0.1;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-const double cte_coeff = 15000;
-const double epsi_coeff = 10000;
+const double cte_coeff = 1000;
+const double epsi_coeff = 1000;
 const double delta_coeff = 100;
 const double a_coeff = 20;
 const double delta_diff_coeff = 100;
+const double v_coeff = 30;
 
 double ref_cte = 0;
 double ref_epsi = 0;
-double ref_v = 20;
+double ref_v = 65;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -62,7 +63,7 @@ public:
         for (int t = 0; t < N; t++) {
             fg[0] += cte_coeff * CppAD::pow(vars[cte_start + t] - ref_cte, 2); //cte_coeff
             fg[0] += epsi_coeff * CppAD::pow(vars[epsi_start + t] - ref_epsi, 2); //epsi_coeff
-            fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+            fg[0] += v_coeff*CppAD::pow(vars[v_start + t] - ref_v, 2);
         }
 
         // Minimize the use of actuators.
@@ -119,12 +120,12 @@ public:
             // The idea here is to constraint this value to be 0.
             fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
             fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
-            fg[1 + psi_start + t] = psi1 - (psi0 - v0 * delta0 / Lf * dt);
+            fg[1 + psi_start + t] = psi1 - (psi0 - v0 * delta0 / Lf * dt); //no flip since angle gets negative while transform
             fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
             fg[1 + cte_start + t] =
                     cte1 - ((f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
             fg[1 + epsi_start + t] =
-                    epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
+                    epsi1 - ((psi0 - psides0) - v0 * delta0 / Lf * dt); //no flip since angle gets negative while transform
         }
 
     }
